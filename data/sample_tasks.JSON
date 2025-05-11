@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Study Machine Learning",
+    "duration": 2,
+    "priority": 5,
+    "type": "Study",
+    "energy": "high"
+  },
+  {
+    "name": "Workout",
+    "duration": 1,
+    "priority": 4,
+    "type": "Health",
+    "energy": "medium"
+  },
+  {
+    "name": "Read Book",
+    "duration": 1,
+    "priority": 3,
+    "type": "Personal",
+    "energy": "low"
+  },
+  {
+    "name": "Write Blog",
+    "duration": 1,
+    "priority": 2,
+    "type": "Creative",
+    "energy": "medium"
+  },
+  {
+    "name": "Respond to Emails",
+    "duration": 1,
+    "priority": 1,
+    "type": "Work",
+    "energy": "low"
+  }
+]
