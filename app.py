@@ -6,7 +6,10 @@ import os
 from datetime import datetime
 
 # -- Save/Load Paths --
-SAVE_PATH = "C:/Users\ASUS/OneDrive/Documents/GitHub/Time-Optimizer/data/saved_tasks.json"
+#SAVE_PATH = "C:/Users\ASUS/OneDrive/Documents/GitHub/Time-Optimizer/data/saved_tasks.json"
+SAVE_DIR = os.path.join("data")
+SAVE_PATH = os.path.join(SAVE_DIR, "saved_tasks.json")
+os.makedirs(SAVE_DIR, exist_ok=True)
 
 def save_tasks(tasks):
     with open(SAVE_PATH, "w") as f:
@@ -29,8 +32,11 @@ available_hours = st.slider("How many hours are available today?", 1, 14, 6)
 # -- Load Saved Tasks --
 if st.sidebar.button("Load Last Saved Tasks"):
     tasks = load_tasks()
-    st.session_state["loaded_tasks"] = tasks
-    st.rerun()
+    if tasks:
+        st.session_state["loaded_tasks"] = tasks
+        st.rerun()
+    else:
+        st.sidebar.warning("No saved tasks found")
 
 loaded = st.session_state.get("loaded_tasks", [])
 task_count = st.number_input("Number of tasks", min_value=1, max_value=10, value=len(loaded) or 3)
@@ -38,12 +44,19 @@ task_count = st.number_input("Number of tasks", min_value=1, max_value=10, value
 # -- Task Input Section --
 tasks = []
 for i in range(task_count):
+    
+    loaded_tasks = loaded    
+    if i<len(loaded_tasks):
+        default = loaded_tasks[i]
+    else:
+        default = {}
+    
     st.markdown(f"**Task {i+1}**")
-    name = st.text_input(f"Name {i+1}", value=loaded[i]["name"] if i < len(loaded) else "", key=f"name{i}")
-    duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, loaded[i]["duration"] if i < len(loaded) else 1, key=f"dur{i}")
-    priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, loaded[i]["priority"] if i < len(loaded) else 3, key=f"pri{i}")
-    task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(loaded[i]["type"]) if i < len(loaded) else 0, key=f"type{i}")
-    energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(loaded[i]["energy"]) if i < len(loaded) else 0, key=f"en{i}")
+    name = st.text_input(f"Name {i+1}", value= default.get("name", ""), key=f"name{i}")
+    duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
+    priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, default.get("priority", 3), key=f"pri{i}")
+    task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
+    energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
     
     if name:
         tasks.append({
@@ -55,7 +68,7 @@ for i in range(task_count):
         })
 
 # -- Save Button --
-if tasks and st.button("Save Task List"):
+if st.button("Save Task List"):
     save_tasks(tasks)
     st.success("Tasks saved successfully!")
 
