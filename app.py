@@ -25,6 +25,7 @@ def load_tasks():
 st.set_page_config(page_title="Time Optimizer", layout="centered")
 st.title("Time Optimizer")
 st.markdown("Plan your day smartly based on task priority and energy levels.")
+st.header("Task Input")
 
 # -- Input: Time Available --
 available_hours = st.slider("How many hours are available today?", 1, 14, 6)
@@ -42,6 +43,7 @@ loaded = st.session_state.get("loaded_tasks", [])
 task_count = st.number_input("Number of tasks", min_value=1, max_value=10, value=len(loaded) or 3)
 
 # -- Task Input Section --
+st.markdown("Available Time and Task Details")
 tasks = []
 for i in range(task_count):
     
@@ -51,12 +53,12 @@ for i in range(task_count):
     else:
         default = {}
     
-    st.markdown(f"**Task {i+1}**")
-    name = st.text_input(f"Name {i+1}", value= default.get("name", ""), key=f"name{i}")
-    duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
-    priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, default.get("priority", 3), key=f"pri{i}")
-    task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
-    energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
+    with st.expander(f"Task{i+1}"):
+        name = st.text_input(f"Name {i+1}", value= default.get("name", ""), key=f"name{i}")
+        duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
+        priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, default.get("priority", 3), key=f"pri{i}")
+        task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
+        energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
     
     if name:
         tasks.append({
@@ -71,6 +73,14 @@ for i in range(task_count):
 if st.button("Save Task List"):
     save_tasks(tasks)
     st.success("Tasks saved successfully!")
+    
+# -- Clear Button --
+if st.button("Clear Saved Tasks"):
+    if os.path.exists(SAVE_PATH):
+        os.remove(SAVE_PATH)
+        st.success("Saved Tasks Cleared")
+        st.session_state.pop("loaded_tasks", None)
+        st.rerun()
 
 # -- Generate Schedule --
 if st.button("Generate Schedule") and tasks:
