@@ -21,6 +21,12 @@ def load_tasks():
             return json.load(f)
     return []
 
+def format_schedule_text(schedule):
+    lines = ["Your optimized schedule:\n"]
+    for s in schedule:
+        lines.append(f"{s['start']} - {s['end']}: {s['task']} ({s['energy']})")
+    return "\n".join(lines)
+
 # -- Page Setup --
 st.set_page_config(page_title="Time Optimizer", layout="centered")
 st.title("Time Optimizer")
@@ -89,7 +95,7 @@ if st.button("Generate Schedule") and tasks:
     if schedule:
         st.subheader("Optimized Schedule")
         for s in schedule:
-            st.markdown(f"**{s['start']} – {s['end']}**: {s['task']} ({s['energy']})")
+            st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy)")
 
         # -- Pie Chart --
         st.subheader("Time Distribution")
@@ -99,6 +105,8 @@ if st.button("Generate Schedule") and tasks:
         ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
         st.pyplot(fig)
+        schedule_text = format_schedule_text(schedule)
+        st.download_button("Download schedule as .txt", schedule_text, file_name="schedule.txt")
 
         # -- Unused Time Info --
         total_used = sum(sizes)
