@@ -87,25 +87,32 @@ if st.button("Clear Saved Tasks"):
         st.success("Saved Tasks Cleared")
         st.session_state.pop("loaded_tasks", None)
         st.rerun()
+        
+task_types = sorted(set(task['type'] for task in tasks))
+selected_types = st.multiselect("Filter by Task Type", task_types, default=task_types)
 
 # -- Generate Schedule --
 if st.button("Generate Schedule") and tasks:
     schedule = generate_schedule(tasks, available_hours)
+    task_type_lookup = {t["name"]: t["type"] for t in tasks}
+    filtered_schedule = [s for s in schedule if task_type_lookup.get(s["task"]) in selected_types]
 
-    if schedule:
-        st.subheader("Optimized Schedule")
-        for s in schedule:
+
+
+    if filtered_schedule:
+        st.subheader("Filtered Schedule")
+        for s in filtered_schedule:
             st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy)")
 
         # -- Pie Chart --
         st.subheader("Time Distribution")
-        labels = [s["task"] for s in schedule]
-        sizes = [int(s["end"].split(":")[0]) - int(s["start"].split(":")[0]) for s in schedule]
+        labels = [s["task"] for s in filtered_schedule]
+        sizes = [int(s["end"].split(":")[0]) - int(s["start"].split(":")[0]) for s in filtered_schedule]
         fig, ax = plt.subplots()
         ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
         ax.axis('equal')
         st.pyplot(fig)
-        schedule_text = format_schedule_text(schedule)
+        schedule_text = format_schedule_text(filtered_schedule)
         st.download_button("Download schedule as .txt", schedule_text, file_name="schedule.txt")
 
         # -- Unused Time Info --
