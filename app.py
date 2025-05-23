@@ -1,3 +1,5 @@
+import numpy as np
+from collections import Counter
 import streamlit as st
 import json
 from scheduler.core import generate_schedule
@@ -95,15 +97,34 @@ selected_types = st.multiselect("Filter by Task Type", task_types, default=task_
 if st.button("Generate Schedule") and tasks:
     schedule = generate_schedule(tasks, available_hours)
     task_type_lookup = {t["name"]: t["type"] for t in tasks}
-    filtered_schedule = [s for s in schedule if task_type_lookup.get(s["task"]) in selected_types]
-
-
+    for s in schedule:
+        s["task_type"] = task_type_lookup.get(s["task"], "Unknown")
+    filtered_schedule = [s for s in schedule if s["task_type"] in selected_types]
+    #Summary stats
+    energy_counts = Counter(s['energy'] for s in filtered_schedule)
+    type_counts = Counter(s['task_type'] for s in filtered_schedule)
+    priorities = [task['priority'] for task in tasks if task['name'] in [s['task'] for s in filtered_schedule]]
+    avg_priority = np.mean(priorities) if priorities else 0
+    most_common_type = type_counts.most_common(1)[0][0] if type_counts else "N/A"
 
     if filtered_schedule:
         st.subheader("Filtered Schedule")
         for s in filtered_schedule:
             st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy)")
 
+        st.subheader("Task Summary Dashboard")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("High Energy Tasks", f"{energy_counts.get('high', 0)}")
+        
+        with col2:
+            st.metric("Medium Energy", f"{energy_counts.get('medium', 0)}")
+        
+        with col3:
+            st.metric("Low Energy", f"{energy_counts.get('low', 0)}")
+        st.markdown(f"**Most Frequent Task type**: {most_common_type}")
+        st.markdown(f"**Average Priority**: {avg_priority:.2f}")
+    
         # -- Pie Chart --
         st.subheader("Time Distribution")
         labels = [s["task"] for s in filtered_schedule]
@@ -115,6 +136,19 @@ if st.button("Generate Schedule") and tasks:
         schedule_text = format_schedule_text(filtered_schedule)
         st.download_button("Download schedule as .txt", schedule_text, file_name="schedule.txt")
 
+        #Bar Chart
+        st.subheader("Hour spent per task type")
+        type_hours = {}
+        for s in filtered_schedule:
+            hrs = int(s["end"].split(":")[0]) - int(s["start"].split(":")[0])
+            type_hours[s["task_type"]] = type_hours.get(s["task_type"], 0) + hrs
+            
+        fig2, ax2 = plt.subplots()
+        ax2.bar(type_hours.keys(), type_hours.values(), color = 'skyblue')
+        ax2.set_ylabel("Hours")
+        ax2.set_xlabel("Task Type")
+        st.pyplot(fig2)
+        
         # -- Unused Time Info --
         total_used = sum(sizes)
         time_left = available_hours - total_used

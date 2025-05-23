@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Gym",
+    "duration": 1,
+    "priority": 5,
+    "type": "Health",
+    "energy": "high"
+  },
+  {
+    "name": "Study",
+    "duration": 3,
+    "priority": 4,
+    "type": "Study",
+    "energy": "medium"
+  },
+  {
+    "name": "Cook",
+    "duration": 2,
+    "priority": 3,
+    "type": "Work",
+    "energy": "low"
+  }
+]
