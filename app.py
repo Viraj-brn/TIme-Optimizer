@@ -152,6 +152,9 @@ if st.button("Generate Schedule") and tasks:
         # -- Unused Time Info --
         total_used = sum(sizes)
         time_left = available_hours - total_used
-        st.info(f"Time left unscheduled: {time_left} hour(s)")
+        if time_left>=2:
+            st.warning(f"Warning: {time_left} hour(s) left unscheduled.")
+        else:
+            st.warning(f"Good Job! Only {time_left} hour(s) left unschedule.")
     else:
         st.warning("Not enough time to fit any task!")
