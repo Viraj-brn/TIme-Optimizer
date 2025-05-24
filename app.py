@@ -147,7 +147,7 @@ if st.button("Generate Schedule") and tasks:
         ax2.bar(type_hours.keys(), type_hours.values(), color = 'skyblue')
         ax2.set_ylabel("Hours")
         ax2.set_xlabel("Task Type")
-        st.pyplot(fig2)
+        st.pyplot(fig2, use_container_width=True)
         
         # -- Unused Time Info --
         total_used = sum(sizes)
