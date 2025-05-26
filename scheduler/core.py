@@ -26,3 +26,11 @@ def generate_schedule(tasks, available_hours):
                 time_pointer = hour + task["duration"]
                 break
     return schedule
+
+def assign_energy_blocks(available_hours):
+    if available_hours<=3:
+        return [(0, available_hours, 'high')]
+    elif available_hours<=6:
+        return [(0, 2, 'high'), (2, available_hours, 'medium')]
+    else:
+        return [(0, 2, 'high'), (2, 4, 'medium'), (4, available_hours, 'low')]

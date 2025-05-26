@@ -109,7 +109,16 @@ if st.button("Generate Schedule") and tasks:
 
     if filtered_schedule:
         st.subheader("Filtered Schedule")
+        
+        type_icons = {
+            "Study": "📚",
+            "Work": "💼",
+            "Health": "💪",
+            "Personal": "❤️",
+            "Creative": "🎨"
+        }
         for s in filtered_schedule:
+            icon = type_icons.get(s["task_type"], "🗂️")
             st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy)")
 
         st.subheader("Task Summary Dashboard")
@@ -125,7 +134,7 @@ if st.button("Generate Schedule") and tasks:
         st.markdown(f"**Most Frequent Task type**: {most_common_type}")
         st.markdown(f"**Average Priority**: {avg_priority:.2f}")
     
-        # -- Pie Chart --
+       # -- Pie Chart --
         st.subheader("Time Distribution")
         labels = [s["task"] for s in filtered_schedule]
         sizes = [int(s["end"].split(":")[0]) - int(s["start"].split(":")[0]) for s in filtered_schedule]
