@@ -5,13 +5,29 @@ import json
 from scheduler.core import generate_schedule
 import matplotlib.pyplot as plt
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
+import matplotlib.dates as mdates
 
-# -- Save/Load Paths --
-#SAVE_PATH = "C:/Users\ASUS/OneDrive/Documents/GitHub/Time-Optimizer/data/saved_tasks.json"
 SAVE_DIR = os.path.join("data")
 SAVE_PATH = os.path.join(SAVE_DIR, "saved_tasks.json")
 os.makedirs(SAVE_DIR, exist_ok=True)
+
+#Gantt Style Task timeline function
+def plot_task_timeline(schedule):
+    fig, ax = plt.subplots(figsize = (10,4))
+    
+    base_time = datetime.strptime("08:00", "%H:%M") #Starting time for display
+    for idx, task in enumerate(schedule):
+        start = datetime.strptime(task["start"], "%H:%M")
+        end = datetime.strptime(task["end"], "%H:%M")
+        ax.barh(task["task"], (end - start).seconds/3600, left=(start - base_time).seconds/3600)
+    
+    ax.set_xlabel("Hours of Day")
+    ax.set_ylabel("Tasks")
+    ax.set_title("Task timeline")
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=1))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    st.pyplot(fig, use_container_width=True)
 
 def save_tasks(tasks):
     with open(SAVE_PATH, "w") as f:
@@ -60,7 +76,7 @@ for i in range(task_count):
         default = loaded_tasks[i]
     else:
         default = {}
-    
+
     with st.expander(f"Task{i+1}"):
         name = st.text_input(f"Name {i+1}", value= default.get("name", ""), key=f"name{i}")
         duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
@@ -157,6 +173,9 @@ if st.button("Generate Schedule") and tasks:
         ax2.set_ylabel("Hours")
         ax2.set_xlabel("Task Type")
         st.pyplot(fig2, use_container_width=True)
+        
+        st.subheader("Task Timeline (Gantt View)")
+        plot_task_timeline(schedule)
         
         # -- Unused Time Info --
         total_used = sum(sizes)

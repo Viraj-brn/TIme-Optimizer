@@ -16,6 +16,7 @@ def generate_schedule(tasks, available_hours):
         possible_slots = energy_blocks[task["energy"]]
         for hour in possible_slots:
             if hour >= time_pointer and hour + task["duration"] <= 22:
+                print(f"[DEBUG] Assigning task: '{task['name']}' | Duration: {task['duration']}h | Energy: {task['energy']} | Slot: {hour}:00 to {hour + task['duration']}:00")
                 schedule.append({"task": task["name"],
                                 "start": f"{hour}:00",
                                 "end": f"{hour+task['duration']}:00",
