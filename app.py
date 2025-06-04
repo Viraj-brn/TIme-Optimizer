@@ -124,6 +124,13 @@ if st.button("Generate Schedule") and tasks:
     most_common_type = type_counts.most_common(1)[0][0] if type_counts else "N/A"
 
     if filtered_schedule:
+        st.subheader("Manual Adjustments")
+        edited_schedule = st.data_editor(filtered_schedule, num_rows="fixed", use_container_width=True)
+        
+        if st.button("Apply manual edits"):
+            filtered_schedule = edited_schedule
+            st.success("Custom schedule applied!")
+        
         st.subheader("Filtered Schedule")
         
         type_icons = {
