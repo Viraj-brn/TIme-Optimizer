@@ -82,15 +82,18 @@ for i in range(task_count):
         duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
         priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, default.get("priority", 3), key=f"pri{i}")
         task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
-        energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
-    
+        #energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
+        energy = st.selectbox(f"Energy Requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
+        tags = st.multiselect(f"Tags {i+1}(optional)", ["urgent", "deep work", "outdoor", "online", "offline", "collab"], default=default.get("tags", []), key=f"tags{i}")
+        
     if name:
         tasks.append({
             "name": name,
             "duration": duration,
             "priority": priority,
             "type": task_type,
-            "energy": energy
+            "energy": energy,
+            "tags" : tags
         })
 
 # -- Save Button --
@@ -113,8 +116,10 @@ selected_types = st.multiselect("Filter by Task Type", task_types, default=task_
 if st.button("Generate Schedule") and tasks:
     schedule = generate_schedule(tasks, available_hours)
     task_type_lookup = {t["name"]: t["type"] for t in tasks}
+    task_tags_lookup = {t["name"]: t.get("tags", []) for t in tasks}
     for s in schedule:
         s["task_type"] = task_type_lookup.get(s["task"], "Unknown")
+        s["tags"] = task_tags_lookup.get(s["task"], [])
     filtered_schedule = [s for s in schedule if s["task_type"] in selected_types]
     #Summary stats
     energy_counts = Counter(s['energy'] for s in filtered_schedule)
@@ -142,7 +147,8 @@ if st.button("Generate Schedule") and tasks:
         }
         for s in filtered_schedule:
             icon = type_icons.get(s["task_type"], "🗂️")
-            st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy)")
+            tag_str = ", ".join(s.get("tags", []))
+            st.markdown(f"***{s['start']} – {s['end']}** &nbsp;  {s['task']} ({s['energy'].capitalize()} energy){' | ' + tag_str if tag_str else ''}")
 
         st.subheader("Task Summary Dashboard")
         col1, col2, col3 = st.columns(3)
