@@ -84,8 +84,9 @@ for i in range(task_count):
         task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
         #energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
         energy = st.selectbox(f"Energy Requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
-        tags = st.multiselect(f"Tags {i+1}(optional)", ["urgent", "deep work", "outdoor", "online", "offline", "collab"], default=default.get("tags", []), key=f"tags{i}")
-        
+        #tags = st.multiselect(f"Tags {i+1}(optional)", ["urgent", "deep work", "outdoor", "online", "offline", "collab"], default=default.get("tags", []), key=f"tags{i}")
+        tags_input = st.text_input(f"Tags (comma separated) {i+1}", value=",".join(default.get("tags", [])), key=f"tags{i}")
+        tags = [tag.strip() for tag in tags_input.split(",") if tag.strip()]    
     if name:
         tasks.append({
             "name": name,
@@ -115,12 +116,20 @@ selected_types = st.multiselect("Filter by Task Type", task_types, default=task_
 # -- Generate Schedule --
 if st.button("Generate Schedule") and tasks:
     schedule = generate_schedule(tasks, available_hours)
+    all_tags = sorted({tag for s in schedule for tag in s.get("tags", [])})
+    selected_tags = st.sidebar.multiselect("Filter by tags", all_tags, default = all_tags)
     task_type_lookup = {t["name"]: t["type"] for t in tasks}
     task_tags_lookup = {t["name"]: t.get("tags", []) for t in tasks}
     for s in schedule:
         s["task_type"] = task_type_lookup.get(s["task"], "Unknown")
         s["tags"] = task_tags_lookup.get(s["task"], [])
-    filtered_schedule = [s for s in schedule if s["task_type"] in selected_types]
+    
+    filtered_schedule = [
+    s for s in schedule
+    if s["task_type"] in selected_types and
+       (not selected_tags or any(tag in selected_tags for tag in s.get("tags", [])))
+    ]
+    
     #Summary stats
     energy_counts = Counter(s['energy'] for s in filtered_schedule)
     type_counts = Counter(s['task_type'] for s in filtered_schedule)
