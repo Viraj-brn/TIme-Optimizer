@@ -77,17 +77,23 @@ for i in range(task_count):
     else:
         default = {}
 
-    with st.expander(f"Task{i+1}"):
+    col1, col2 = st.columns([5, 1])
+    with col1.expander(f"Task{i+1}"):
         name = st.text_input(f"Name {i+1}", value= default.get("name", ""), key=f"name{i}")
         duration = st.slider(f"Duration (hrs) {i+1}", 1, 4, default.get("duration", 1), key=f"dur{i}")
         priority = st.slider(f"Priority (1=Low, 5=High) {i+1}", 1, 5, default.get("priority", 3), key=f"pri{i}")
         task_type = st.selectbox(f"Type {i+1}", ["Study", "Work", "Health", "Personal", "Creative"], index=["Study", "Work", "Health", "Personal", "Creative"].index(default.get("type", "Study")), key=f"type{i}")
-        #energy = st.selectbox(f"Energy requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
         energy = st.selectbox(f"Energy Requirement {i+1}", ["high", "medium", "low"], index=["high", "medium", "low"].index(default.get("energy", "medium")), key=f"en{i}")
-        #tags = st.multiselect(f"Tags {i+1}(optional)", ["urgent", "deep work", "outdoor", "online", "offline", "collab"], default=default.get("tags", []), key=f"tags{i}")
         tags_input = st.text_input(f"Tags (comma separated) {i+1}", value=",".join(default.get("tags", [])), key=f"tags{i}")
-        tags = [tag.strip() for tag in tags_input.split(",") if tag.strip()]    
-    if name:
+        tags = [tag.strip() for tag in tags_input.split(",") if tag.strip()]
+    
+    with col2:
+        if st.button("X", key=f"del{i}"):
+            st.session_state["deleted_task_ids"] = st.session_state.get("deleted_task_ids", set())
+            st.session_state["deleted_task_ids"].add(i)
+            st.rerun()
+        
+    if name and i not in st.session_state.get("deleted_task_ids", set()):
         tasks.append({
             "name": name,
             "duration": duration,
@@ -96,6 +102,12 @@ for i in range(task_count):
             "energy": energy,
             "tags" : tags
         })
+
+# -- Undo All Deletes Button --
+if "deleted_task_ids" in st.session_state and st.session_state["deleted_task_ids"]:
+    if st.button("Undo All Deletes"):
+        st.session_state.pop("deleted_task_ids", None)
+        st.rerun()
 
 # -- Save Button --
 if st.button("Save Task List"):
