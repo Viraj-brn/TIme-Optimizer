@@ -30,13 +30,18 @@ def plot_task_timeline(schedule):
     st.pyplot(fig, use_container_width=True)
 
 def save_tasks(tasks):
+    data = {
+        "tasks": tasks,
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
     with open(SAVE_PATH, "w") as f:
         json.dump(tasks, f, indent=2)
 
 def load_tasks():
     if os.path.exists(SAVE_PATH):
         with open(SAVE_PATH, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+            return data.get("tasks", [])
     return []
 
 def format_schedule_text(schedule):
@@ -113,6 +118,10 @@ if "deleted_task_ids" in st.session_state and st.session_state["deleted_task_ids
 if st.button("Save Task List"):
     save_tasks(tasks)
     st.success("Tasks saved successfully!")
+    
+if st.button("Update Saved Tasks"):
+    save_tasks(tasks)
+    st.success("Saved tasks updated")
     
 # -- Clear Button --
 if st.button("Clear Saved Tasks"):
