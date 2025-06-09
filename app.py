@@ -11,6 +11,7 @@ import matplotlib.dates as mdates
 SAVE_DIR = os.path.join("data")
 SAVE_PATH = os.path.join(SAVE_DIR, "saved_tasks.json")
 os.makedirs(SAVE_DIR, exist_ok=True)
+TODAY_SCHEDULE_PATH = os.path.join(SAVE_DIR, f"schedule_{datetime.now().strftime('%Y%m%d')}.json")
 
 #Gantt Style Task timeline function
 def plot_task_timeline(schedule):
@@ -41,8 +42,12 @@ def load_tasks():
     if os.path.exists(SAVE_PATH):
         with open(SAVE_PATH, "r") as f:
             data = json.load(f)
-            return data.get("tasks", [])
+            return data.get("tasks", []), data.get("last_updated", "Unknown")
     return []
+
+def save_today_schedule(schedule):
+    with open(TODAY_SCHEDULE_PATH, "w") as f:
+        json.dump(schedule, f, indent=2)
 
 def format_schedule_text(schedule):
     lines = ["Your optimized schedule:\n"]
@@ -61,12 +66,22 @@ available_hours = st.slider("How many hours are available today?", 1, 14, 6)
 
 # -- Load Saved Tasks --
 if st.sidebar.button("Load Last Saved Tasks"):
-    tasks = load_tasks()
+    tasks, last_updated = load_tasks()
+    st.sidebar.success(f"Tasks Loaded (Last updated: {last_updated})")
     if tasks:
         st.session_state["loaded_tasks"] = tasks
         st.rerun()
     else:
         st.sidebar.warning("No saved tasks found")
+
+if st.sidebar.button("View Today’s Schedule"):
+        if os.path.exists(TODAY_SCHEDULE_PATH):
+            with open(TODAY_SCHEDULE_PATH, "r") as f:
+                today_schedule = json.load(f)
+            st.sidebar.subheader("Today’s Schedule")
+            st.sidebar.text(format_schedule_text(today_schedule))
+        else:
+            st.sidebar.warning("No schedule saved for today.")
 
 loaded = st.session_state.get("loaded_tasks", [])
 task_count = st.number_input("Number of tasks", min_value=1, max_value=10, value=len(loaded) or 3)
@@ -135,8 +150,11 @@ task_types = sorted(set(task['type'] for task in tasks))
 selected_types = st.multiselect("Filter by Task Type", task_types, default=task_types)
 
 # -- Generate Schedule --
+focus_tag = st.text_input("Today's Focus Tag(optional)", "")    
 if st.button("Generate Schedule") and tasks:
     schedule = generate_schedule(tasks, available_hours)
+    save_today_schedule(schedule)
+    st.success("Today's schedule saved!")
     all_tags = sorted({tag for s in schedule for tag in s.get("tags", [])})
     selected_tags = st.sidebar.multiselect("Filter by tags", all_tags, default = all_tags)
     task_type_lookup = {t["name"]: t["type"] for t in tasks}
