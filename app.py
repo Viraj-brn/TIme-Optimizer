@@ -74,14 +74,25 @@ if st.sidebar.button("Load Last Saved Tasks"):
     else:
         st.sidebar.warning("No saved tasks found")
 
+# View today's schedule
 if st.sidebar.button("View Today’s Schedule"):
-        if os.path.exists(TODAY_SCHEDULE_PATH):
-            with open(TODAY_SCHEDULE_PATH, "r") as f:
-                today_schedule = json.load(f)
-            st.sidebar.subheader("Today’s Schedule")
-            st.sidebar.text(format_schedule_text(today_schedule))
+    filter_options = ["All", "Study", "Work", "Health", "Personal", "Creative"]
+    selected_type = st.sidebar.selectbox("Filter by Task Type", filter_options)
+    
+    if os.path.exists(TODAY_SCHEDULE_PATH):
+        with open(TODAY_SCHEDULE_PATH, "r") as f:
+            today_schedule = json.load(f)
+        
+        if selected_type != "All":
+            filtered_schedule = [task for task in today_schedule if task["type"].lower() == selected_type.lower()]
         else:
-            st.sidebar.warning("No schedule saved for today.")
+            filtered_schedule = today_schedule
+
+        st.sidebar.subheader("Today’s Schedule")
+        st.sidebar.text(format_schedule_text(filtered_schedule))
+        plot_task_timeline(filtered_schedule)  # Optional visualization
+    else:
+        st.sidebar.warning("No schedule saved for today.")
 
 loaded = st.session_state.get("loaded_tasks", [])
 task_count = st.number_input("Number of tasks", min_value=1, max_value=10, value=len(loaded) or 3)
@@ -236,7 +247,7 @@ if st.button("Generate Schedule") and tasks:
         st.pyplot(fig2, use_container_width=True)
         
         st.subheader("Task Timeline (Gantt View)")
-        plot_task_timeline(schedule)
+        plot_task_timeline(filtered_schedule)
         
         # -- Unused Time Info --
         total_used = sum(sizes)
