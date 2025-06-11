@@ -246,6 +246,39 @@ if st.button("Generate Schedule") and tasks:
         ax2.set_xlabel("Task Type")
         st.pyplot(fig2, use_container_width=True)
         
+        # -- Daily Insights Summary --
+        st.subheader("Daily Insights")
+        total_tasks = len(filtered_schedule)
+        total_duration = sum(int(s["end"].split(":")[0]) - int(s["start"].split(":")[0]) for s in filtered_schedule)
+        energy_count = Counter(s["energy"] for s in filtered_schedule)
+        type_duration = {}
+        priority_map = {s['task']: next((t['priority'] for t in tasks if t["name"] == s["task"]), 0) for s in filtered_schedule}
+        max_priority_task = max(priority_map.items(), key = lambda x: x[1])[0] if type_duration else "None"
+        
+        for s in filtered_schedule:
+            hrs = int(s["end"].split(":")[0]) - int(s["start"].split(":")[0])
+            type_duration[s["task_type"]] = type_duration.get(s["task_type"], 0) + hrs
+        
+        max_type = max(type_duration.items(), key=lambda x: x[1])[0] if type_duration else "N/A"
+        completion_percent = round((total_duration/ available_hours) * 100, 1) if available_hours else 0
+        
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Tasks", total_tasks)
+        col2.metric("Total Hours Used", total_duration)
+        col3.metric("percent(%) of day utilized", f"{completion_percent}%")
+        
+        col4, col5, col6 = st.columns(3)
+        col4.metric("Most Time Type", max_type)
+        col5.metric("High Energy Tasks", energy_count.get("high", 0))
+        col6.metric("Top Priority Task", max_priority_task)
+        
+        if completion_percent >=90:
+            st.success("You are killing it! Almost a fully packed day.")
+        elif completion_percent >=60:
+            st.info("Solid work! You can try to squeeze in one more task.")
+        else:
+            st.warning("You still have time! Fill it with something meaningful")
+        
         st.subheader("Task Timeline (Gantt View)")
         plot_task_timeline(filtered_schedule)
         
