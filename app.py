@@ -279,6 +279,33 @@ if st.button("Generate Schedule") and tasks:
         else:
             st.warning("You still have time! Fill it with something meaningful")
         
+        # -- Smart Suggestions Block --
+        st.subheader("Smart Suggestions")
+        
+        unused_time = available_hours - total_duration
+        
+        if unused_time <= 0:
+            st.info("You're fully scheduled. No more suggestions for today.")
+        else:
+            st.markdown(f"You have **{unused_time} hour(s)** still available")
+            st.markdown("Here are some suggestions from your saved tasks:")
+            
+            focus_tag_lower = focus_tag.strip().lower()
+            remaining_tasks = [
+                t for t in tasks
+                if t["name"] not in [s["task"] for s in filtered_schedule]
+                and t["duration"] <= unused_time
+                and (focus_tag_lower in [tag.lower() for tag in t.get("tags", [])] if focus_tag_lower else True)
+            ]
+            
+            sorted_suggestions = sorted(remaining_tasks, key=lambda x: (x["priority"], x["energy"] == "low"), reverse=True)
+            
+            if sorted_suggestions:
+                for suggestion in sorted_suggestions[:5]:
+                    tags_string = ", ".join(suggestion.get("tags", []))
+                    st.markdown(f"• **{suggestion['name']}** ({suggestion['duration']} hr, {suggestion['energy']} energy) — _Tags: {tags_string}_")
+            else:
+                st.info("No suitable tasks found matching the focus tag or time")
         st.subheader("Task Timeline (Gantt View)")
         plot_task_timeline(filtered_schedule)
         
