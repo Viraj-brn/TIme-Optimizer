@@ -163,7 +163,7 @@ selected_types = st.multiselect("Filter by Task Type", task_types, default=task_
 # -- Generate Schedule --
 focus_tag = st.text_input("Today's Focus Tag(optional)", "")    
 if st.button("Generate Schedule") and tasks:
-    schedule = generate_schedule(tasks, available_hours)
+    schedule = generate_schedule(tasks, available_hours, focus_tag)
     save_today_schedule(schedule)
     st.success("Today's schedule saved!")
     all_tags = sorted({tag for s in schedule for tag in s.get("tags", [])})
