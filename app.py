@@ -188,12 +188,21 @@ if st.button("Generate Schedule") and tasks:
     most_common_type = type_counts.most_common(1)[0][0] if type_counts else "N/A"
 
     if filtered_schedule:
-        st.subheader("Manual Adjustments")
-        edited_schedule = st.data_editor(filtered_schedule, num_rows="fixed", use_container_width=True)
+        st.subheader("Manual Adjustments (Drag to reorder)")
         
-        if st.button("Apply manual edits"):
-            filtered_schedule = edited_schedule
+        for idx, task in enumerate(filtered_schedule):
+            task["order"] = idx
+            
+        edited_schedule = st.data_editor(filtered_schedule, 
+                                         column_order=["order", "start", "end", "task", "energy", "task_type", "tags"],
+                                         use_container_width=True, num_rows="fixed")
+
+        if st.button("Apply Manual Edits and Save"):
+            edited_schedule.sort(key = lambda x: x["order"])
+            save_today_schedule(edited_schedule)
             st.success("Custom schedule applied!")
+            
+            filtered_schedule = edited_schedule
         
         st.subheader("Filtered Schedule")
         
