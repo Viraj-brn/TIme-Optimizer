@@ -36,14 +36,18 @@ def save_tasks(tasks):
         "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
     with open(SAVE_PATH, "w") as f:
-        json.dump(tasks, f, indent=2)
+        json.dump({
+            "tasks": tasks,
+            "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }, f, indent=2)
+
 
 def load_tasks():
     if os.path.exists(SAVE_PATH):
         with open(SAVE_PATH, "r") as f:
             data = json.load(f)
             return data.get("tasks", []), data.get("last_updated", "Unknown")
-    return []
+    return [], "Unknown"
 
 def save_today_schedule(schedule):
     with open(TODAY_SCHEDULE_PATH, "w") as f:

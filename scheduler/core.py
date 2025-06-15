@@ -32,23 +32,36 @@ def generate_schedule(tasks, available_hours, focus_tag=""):
 
     schedule = []
     used_hours = 0
-    time_pointer = 8
     scheduled_tasks = set()
+    occupied_hours = set()  # ❗ Tracks all hours already scheduled
 
     for energy_level, hours in energy_blocks.items():
         for hour in hours:
             if used_hours >= available_hours:
                 break
 
+            # Skip if current hour is already occupied
+            if hour in occupied_hours:
+                continue
+
             best_task = None
             best_score = -1
 
             for task in tasks:
-                if task["name"] in scheduled_tasks:
-                    continue
-                if used_hours + task["duration"] > available_hours:
-                    continue
-                if hour + task["duration"] > 22:
+                duration = task["duration"]
+                task_hours = range(hour, hour + duration)
+
+                # Skip if:
+                # - Already scheduled
+                # - Not enough time left
+                # - Will exceed working window (i.e., 22)
+                # - Any of the task's hours are occupied
+                if (
+                    task["name"] in scheduled_tasks or
+                    used_hours + duration > available_hours or
+                    hour + duration > 22 or
+                    any(h in occupied_hours for h in task_hours)
+                ):
                     continue
 
                 score = compute_task_score(task, energy_level, focus_tag)
@@ -57,15 +70,23 @@ def generate_schedule(tasks, available_hours, focus_tag=""):
                     best_task = task
 
             if best_task:
-                print(f"[DEBUG] Assigning task: '{best_task['name']}' | Duration: {best_task['duration']}h | Energy: {best_task['energy']} | Slot: {hour}:00 to {hour + best_task['duration']}:00")
+                duration = best_task["duration"]
+                start = hour
+                end = hour + duration
+
+                print(f"[DEBUG] Assigning task: '{best_task['name']}' | Duration: {duration}h | Energy: {best_task['energy']} | Slot: {start}:00 to {end}:00")
+
                 schedule.append({
                     "task": best_task["name"],
-                    "start": f"{hour}:00",
-                    "end": f"{hour + best_task['duration']}:00",
-                    "energy": best_task["energy"]
+                    "start": f"{start}:00",
+                    "end": f"{end}:00",
+                    "energy": best_task["energy"],
+                    "tags": ", ".join(best_task.get("tags", []))
                 })
-                used_hours += best_task["duration"]
+
+                used_hours += duration
                 scheduled_tasks.add(best_task["name"])
+                occupied_hours.update(range(start, end))  # ❗ Mark these hours as used
 
     return schedule
 
