@@ -1,0 +1,29 @@
+{
+  "tasks": [
+    {
+      "name": "Gym",
+      "duration": 1,
+      "priority": 5,
+      "type": "Health",
+      "energy": "high",
+      "tags": []
+    },
+    {
+      "name": "Study",
+      "duration": 4,
+      "priority": 5,
+      "type": "Study",
+      "energy": "medium",
+      "tags": []
+    },
+    {
+      "name": "Travel",
+      "duration": 3,
+      "priority": 4,
+      "type": "Work",
+      "energy": "medium",
+      "tags": []
+    }
+  ],
+  "last_updated": "2025-06-15 15:23:24"
+}

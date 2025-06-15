@@ -1,23 +1,23 @@
 [
   {
-    "task": "badmashi",
+    "task": "Gym",
     "start": "8:00",
-    "end": "12:00",
+    "end": "9:00",
     "energy": "high",
-    "tags": "fun"
+    "tags": ""
   },
   {
-    "task": "study",
-    "start": "12:00",
-    "end": "14:00",
+    "task": "Study",
+    "start": "9:00",
+    "end": "13:00",
     "energy": "medium",
-    "tags": "important"
+    "tags": ""
   },
   {
-    "task": "dance",
-    "start": "14:00",
+    "task": "Travel",
+    "start": "13:00",
     "end": "16:00",
     "energy": "medium",
-    "tags": "fun"
+    "tags": ""
   }
 ]

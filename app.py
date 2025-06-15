@@ -292,16 +292,12 @@ if st.button("Generate Schedule") and tasks:
         else:
             st.warning("You still have time! Fill it with something meaningful")
         
-        # -- Smart Suggestions Block --
-        st.subheader("Smart Suggestions")
-        
         unused_time = available_hours - total_duration
         
         if unused_time <= 0:
             st.info("You're fully scheduled. No more suggestions for today.")
         else:
             st.markdown(f"You have **{unused_time} hour(s)** still available")
-            st.markdown("Here are some suggestions from your saved tasks:")
             
             focus_tag_lower = focus_tag.strip().lower()
             remaining_tasks = [
