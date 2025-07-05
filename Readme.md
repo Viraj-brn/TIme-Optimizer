@@ -43,28 +43,9 @@ A personalized scheduling app that creates optimal daily plans based on task pri
 - Streamlit
 - Pandas, NumPy
 - Matplotlib / Plotly
-- Scikit-learn
 
 ---
 
-## 📁 Project Structure
-
-time-optimizer/
-├── app.py
-├── scheduler/
-│ └── core.py
-├── ml/
-│ └── model.py
-├── data/
-│ └── sample_tasks.json
-├── utils/
-│ └── helpers.py
-├── assets/
-├── requirements.txt
-└── README.md
-
-
----
 
 ## 🔮 Future Improvements
 
